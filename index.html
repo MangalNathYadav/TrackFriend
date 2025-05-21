@@ -211,13 +211,13 @@
     <script>
         // Firebase configuration - Replace with your Firebase project details
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAkkGmA4LVvaxDUoWtMs4vVwmZHBVMCgy0",
+            authDomain: "trackfriend-e311f.firebaseapp.com",
+            databaseURL: "https://trackfriend-e311f-default-rtdb.firebaseio.com",
+            projectId: "trackfriend-e311f",
+            storageBucket: "trackfriend-e311f.appspot.com",
+            messagingSenderId: "58012498625",
+            appId: "1:58012498625:web:e92503aea54af303903240"
         };
 
         // Initialize Firebase
@@ -253,6 +253,7 @@
 
         // Start tracking button click handler
         startTrackingBtn.addEventListener('click', () => {
+            console.log("Start button clicked"); // Debug log
             const username = usernameInput.value.trim();
 
             if (!username) {
@@ -260,9 +261,13 @@
                 return;
             }
 
+            // Add loading indicator
+            showStatus(loginStatus, 'Connecting to Firebase...', 'success');
+
             // Check if username is already in use
             database.ref(`${LOCATION_REF}/${username}`).once('value')
                 .then(snapshot => {
+                    console.log("Firebase connection successful"); // Debug log
                     const userData = snapshot.val();
 
                     if (userData && Date.now() - userData.timestamp < OFFLINE_THRESHOLD) {
@@ -274,16 +279,21 @@
                     currentUsername = username;
                     loginSection.style.display = 'none';
                     trackingSection.style.display = 'block';
-                    startLocationTracking();
 
-                    // Set up Firebase listener for all users
-                    setupLocationListener();
+                    // Try to get location permission
+                    if (navigator.geolocation) {
+                        showStatus(trackingStatus, 'Requesting location permission...', 'success');
+                        startLocationTracking();
 
-                    showStatus(trackingStatus, 'Location tracking started', 'success');
+                        // Set up Firebase listener for all users
+                        setupLocationListener();
+                    } else {
+                        showStatus(trackingStatus, 'Geolocation is not supported by your browser', 'error');
+                    }
                 })
                 .catch(error => {
-                    showStatus(loginStatus, `Error: ${error.message}`, 'error');
-                    console.error('Firebase error:', error);
+                    console.error('Firebase error:', error); // Detailed error logging
+                    showStatus(loginStatus, `Firebase error: ${error.message}. Check console for details.`, 'error');
                 });
         });
 
@@ -297,15 +307,31 @@
             // Set up cleanup on page unload
             setupCleanup();
 
+            showStatus(trackingStatus, 'Waiting for location access...', 'success');
+
             // Start watching position with high accuracy
-            watchPositionId = navigator.geolocation.watchPosition(
-                handlePositionUpdate,
-                handlePositionError, {
-                    enableHighAccuracy: true,
-                    maximumAge: 0, // Always get fresh position
-                    timeout: 10000 // Timeout after 10 seconds
-                }
-            );
+            try {
+                watchPositionId = navigator.geolocation.watchPosition(
+                    position => {
+                        // First position received successfully
+                        showStatus(trackingStatus, 'Location tracking active!', 'success');
+                        handlePositionUpdate(position);
+                    },
+                    error => {
+                        console.error('Geolocation error code:', error.code); // Debug error code
+                        handlePositionError(error);
+                    }, {
+                        enableHighAccuracy: true,
+                        maximumAge: 0, // Always get fresh position
+                        timeout: 10000 // Timeout after 10 seconds
+                    }
+                );
+
+                console.log("watchPosition started with ID:", watchPositionId); // Debug log
+            } catch (e) {
+                console.error("Exception starting geolocation:", e); // Capture any exceptions
+                showStatus(trackingStatus, `Error: ${e.message}`, 'error');
+            }
         }
 
         // Handle incoming position updates
