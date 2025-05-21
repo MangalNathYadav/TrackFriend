@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackFriend - Vehicle Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Vehicle Alert System</h1>
+            <div class="vehicle-info">
+                <label for="vehicle-id">Vehicle ID:</label>
+                <select id="vehicle-id">
+                    <option value="VEH001">VEH001</option>
+                    <option value="VEH002">VEH002</option>
+                    <option value="VEH003">VEH003</option>
+                </select>
+            </div>
+        </header>
+
+        <main>
+            <section class="alert-panel">
+                <h2>Ambulance Alert Status</h2>
+                <div class="alert-status" id="alert-status">
+                    <div class="status-indicator" id="status-indicator"></div>
+                    <p id="alert-message">No active alerts</p>
+                </div>
+
+                <div class="action-recommendation">
+                    <h3>Recommended Action:</h3>
+                    <div class="action-display" id="action-display">
+                        <p id="action-text">No action needed</p>
+                    </div>
+                    <p class="distance-info">Ambulance distance: <span id="distance-value">N/A</span></p>
+                </div>
+            </section>
+
+            <section class="location-panel">
+                <h2>Your Location</h2>
+                <div class="location-inputs">
+                    <div class="input-group">
+                        <label for="latitude">Latitude:</label>
+                        <input type="number" id="latitude" step="0.0001" value="28.1250">
+                    </div>
+                    <div class="input-group">
+                        <label for="longitude">Longitude:</label>
+                        <input type="number" id="longitude" step="0.0001" value="77.4530">
+                    </div>
+                    <button id="update-location">Update Location</button>
+                </div>
+
+                <div class="location-simulator">
+                    <h3>Location Simulator</h3>
+                    <div class="simulator-controls">
+                        <button data-direction="north">⬆️ North</button>
+                        <button data-direction="south">⬇️ South</button>
+                        <button data-direction="east">➡️ East</button>
+                        <button data-direction="west">⬅️ West</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="map-view">
+                <h2>Simplified Map</h2>
+                <div class="map-container">
+                    <div class="map" id="simplified-map">
+                        <div class="vehicle-marker" id="vehicle-marker">🚗</div>
+                        <div class="ambulance-marker" id="ambulance-marker">🚑</div>
+                    </div>
+                </div>
+                <p class="map-note">Simplified visualization - not to scale</p>
+            </section>
+
+            <section class="log-section">
+                <h2>Event Log</h2>
+                <div id="event-log" class="log-container">
+                    <p>System ready. Waiting for ambulance signals...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Firebase Config -->
+    <script src="../firebase-config.js"></script>
+    <!-- Shared Utilities -->
+    <script src="../shared/utils.js"></script>
+    <!-- Application Script -->
+    <script src="script.js"></script>
+</body>
+
+</html>
