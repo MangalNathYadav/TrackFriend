@@ -2,214 +2,108 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoTracker</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Location Tracker</title>
     <style>
-         :root {
-            --primary: #4285F4;
-            --success: #34A853;
-            --warning: #FBBC05;
-            --danger: #EA4335;
-            --light: #F8F9FA;
-            --dark: #202124;
-            --gray: #5F6368;
-        }
-        
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            font-family: "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 1rem;
+            background: linear-gradient(to right, #e0f7fa, #ffffff);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         h1 {
-            color: var(--primary);
-            margin-bottom: 20px;
-            font-weight: 500;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2rem;
         }
         
-        .container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        
-        .login-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+        #loginDiv,
+        #trackerDiv {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
         
         input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
         }
         
         button {
-            background-color: var(--primary);
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            background-color: #00796b;
             color: white;
             border: none;
-            border-radius: 4px;
-            padding: 12px 20px;
-            font-size: 16px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background 0.2s ease;
         }
         
         button:hover {
-            background-color: #3367D6;
+            background-color: #004d40;
         }
         
-        .user-list {
-            margin-top: 20px;
+        #userList {
+            margin-top: 1rem;
         }
         
-        .user-card {
-            background-color: white;
-            border-left: 4px solid var(--primary);
-            border-radius: 4px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .user-card.current-user {
-            border-left-color: var(--success);
-        }
-        
-        .user-card.offline {
-            opacity: 0.6;
-        }
-        
-        .user-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .username {
-            font-weight: 600;
-            font-size: 18px;
-        }
-        
-        .coords {
-            font-family: 'Courier New', monospace;
-            background-color: #f5f5f5;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-        
-        .distance {
-            font-size: 14px;
-            color: var(--primary);
-        }
-        
-        .last-seen {
-            font-size: 12px;
-            color: var(--gray);
-            text-align: right;
-        }
-        
-        .accuracy {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
-        
-        .accuracy-high {
-            background-color: var(--success);
-        }
-        
-        .accuracy-medium {
-            background-color: var(--warning);
-        }
-        
-        .accuracy-low {
-            background-color: var(--danger);
-        }
-        
-        .status {
-            display: none;
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 4px;
-        }
-        
-        .status.success {
-            display: block;
-            background-color: rgba(52, 168, 83, 0.1);
-            color: var(--success);
-        }
-        
-        .status.error {
-            display: block;
-            background-color: rgba(234, 67, 53, 0.1);
-            color: var(--danger);
-        }
-        
-        .metadata {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--gray);
-            margin-top: 4px;
+        #userList div {
+            background: #fafafa;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            font-size: 0.95rem;
         }
         
         @media (max-width: 600px) {
-            body {
-                padding: 16px;
+            h1 {
+                font-size: 1.5rem;
             }
-            .container {
-                padding: 16px;
-            }
-            .login-container {
-                flex-direction: column;
+            input,
+            button {
+                font-size: 0.95rem;
             }
         }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
-    <div class="container" id="login-section">
-        <h1>GeoTracker</h1>
-        <p>Share your location and see others in real-time</p>
-        <div class="login-container">
-            <input type="text" id="username-input" placeholder="Enter your username" autocomplete="off">
-            <button id="start-tracking-btn">Start Tracking</button>
-        </div>
-        <div id="login-status" class="status"></div>
+
+    <h1>Live Location Tracker</h1>
+
+    <div id="loginDiv">
+        <input type="text" id="usernameInput" placeholder="Enter your name" />
+        <button id="startBtn">Start Tracking</button>
     </div>
 
-    <div class="container" id="tracking-section" style="display: none;">
-        <h1>Live Tracking</h1>
-        <div id="tracking-status" class="status"></div>
-        <div id="user-list" class="user-list"></div>
+    <div id="trackerDiv" style="display: none;">
+        <h2 style="margin-top: 0;">Live Users</h2>
+        <div id="userList"></div>
     </div>
 
     <script>
-        // Firebase configuration - Replace with your Firebase project details
         const firebaseConfig = {
             apiKey: "AIzaSyAkkGmA4LVvaxDUoWtMs4vVwmZHBVMCgy0",
             authDomain: "trackfriend-e311f.firebaseapp.com",
@@ -220,384 +114,105 @@
             appId: "1:58012498625:web:e92503aea54af303903240"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const db = firebase.database();
 
-        // DOM Elements
-        const loginSection = document.getElementById('login-section');
-        const trackingSection = document.getElementById('tracking-section');
-        const usernameInput = document.getElementById('username-input');
-        const startTrackingBtn = document.getElementById('start-tracking-btn');
-        const userListElement = document.getElementById('user-list');
-        const loginStatus = document.getElementById('login-status');
-        const trackingStatus = document.getElementById('tracking-status');
+        const usernameInput = document.getElementById('usernameInput');
+        const loginDiv = document.getElementById('loginDiv');
+        const trackerDiv = document.getElementById('trackerDiv');
+        const userList = document.getElementById('userList');
 
-        // App State
         let currentUsername = null;
-        let watchPositionId = null;
-        let userNodes = new Map(); // Cache DOM nodes for efficient updates
+        let currentPosition = null;
 
-        // Constants and settings
-        const LOCATION_REF = 'locations';
-        const UPDATE_THROTTLE = 1000; // Minimum time (ms) between location updates
-        const OFFLINE_THRESHOLD = 30000; // Consider user offline after 30 seconds
-        const HIGH_ACCURACY_THRESHOLD = 20; // meters
-        const MEDIUM_ACCURACY_THRESHOLD = 100; // meters
-        const MAX_POSITIONS = 3; // Number of positions to average
-
-        // Performance optimization settings
-        let lastUpdateTime = 0;
-        let lastPositions = [];
-        let pendingUpdate = null;
-
-        // Start tracking button click handler
-        startTrackingBtn.addEventListener('click', () => {
-            console.log("Start button clicked"); // Debug log
-            const username = usernameInput.value.trim();
-
-            if (!username) {
-                showStatus(loginStatus, 'Please enter a username', 'error');
-                return;
-            }
-
-            // Add loading indicator
-            showStatus(loginStatus, 'Connecting to Firebase...', 'success');
-
-            // Check if username is already in use
-            database.ref(`${LOCATION_REF}/${username}`).once('value')
-                .then(snapshot => {
-                    console.log("Firebase connection successful"); // Debug log
-                    const userData = snapshot.val();
-
-                    if (userData && Date.now() - userData.timestamp < OFFLINE_THRESHOLD) {
-                        showStatus(loginStatus, 'This username is already in use', 'error');
-                        return;
-                    }
-
-                    // Username is available, start tracking
-                    currentUsername = username;
-                    loginSection.style.display = 'none';
-                    trackingSection.style.display = 'block';
-
-                    // Try to get location permission
-                    if (navigator.geolocation) {
-                        showStatus(trackingStatus, 'Requesting location permission...', 'success');
-                        startLocationTracking();
-
-                        // Set up Firebase listener for all users
-                        setupLocationListener();
-                    } else {
-                        showStatus(trackingStatus, 'Geolocation is not supported by your browser', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Firebase error:', error); // Detailed error logging
-                    showStatus(loginStatus, `Firebase error: ${error.message}. Check console for details.`, 'error');
-                });
-        });
-
-        // Start location tracking with high precision
-        function startLocationTracking() {
-            if (!navigator.geolocation) {
-                showStatus(trackingStatus, 'Geolocation is not supported by your browser', 'error');
-                return;
-            }
-
-            // Set up cleanup on page unload
-            setupCleanup();
-
-            showStatus(trackingStatus, 'Waiting for location access...', 'success');
-
-            // Start watching position with high accuracy
-            try {
-                watchPositionId = navigator.geolocation.watchPosition(
-                    position => {
-                        // First position received successfully
-                        showStatus(trackingStatus, 'Location tracking active!', 'success');
-                        handlePositionUpdate(position);
-                    },
-                    error => {
-                        console.error('Geolocation error code:', error.code); // Debug error code
-                        handlePositionError(error);
-                    }, {
-                        enableHighAccuracy: true,
-                        maximumAge: 0, // Always get fresh position
-                        timeout: 10000 // Timeout after 10 seconds
-                    }
-                );
-
-                console.log("watchPosition started with ID:", watchPositionId); // Debug log
-            } catch (e) {
-                console.error("Exception starting geolocation:", e); // Capture any exceptions
-                showStatus(trackingStatus, `Error: ${e.message}`, 'error');
-            }
-        }
-
-        // Handle incoming position updates
-        function handlePositionUpdate(position) {
-            const now = Date.now();
-
-            // Add to position history for averaging
-            lastPositions.unshift(position);
-            if (lastPositions.length > MAX_POSITIONS) {
-                lastPositions.pop();
-            }
-
-            // Calculate averaged position
-            const avgPosition = averagePositions(lastPositions);
-
-            // Throttle updates to Firebase
-            if (now - lastUpdateTime >= UPDATE_THROTTLE) {
-                lastUpdateTime = now;
-
-                // Clear any pending update
-                if (pendingUpdate) {
-                    clearTimeout(pendingUpdate);
-                }
-
-                // Update Firebase immediately
-                updateLocationInFirebase(avgPosition);
-            } else {
-                // Schedule update for later if we're within throttle period
-                if (!pendingUpdate) {
-                    const timeToNextUpdate = UPDATE_THROTTLE - (now - lastUpdateTime);
-                    pendingUpdate = setTimeout(() => {
-                        updateLocationInFirebase(avgPosition);
-                        pendingUpdate = null;
-                        lastUpdateTime = Date.now();
-                    }, timeToNextUpdate);
-                }
-            }
-        }
-
-        // Calculate an averaged position from multiple readings
-        function averagePositions(positions) {
-            if (positions.length === 0) return null;
-
-            // Use weighted average, favoring more recent positions
-            let totalLat = 0;
-            let totalLng = 0;
-            let totalAccuracy = 0;
-            let totalWeight = 0;
-
-            positions.forEach((pos, index) => {
-                // Exponentially decrease weight for older positions
-                const weight = Math.pow(0.6, index);
-                totalLat += pos.coords.latitude * weight;
-                totalLng += pos.coords.longitude * weight;
-                totalAccuracy += pos.coords.accuracy * weight;
-                totalWeight += weight;
-            });
-
-            return {
-                coords: {
-                    latitude: totalLat / totalWeight,
-                    longitude: totalLng / totalWeight,
-                    accuracy: totalAccuracy / totalWeight,
-                    speed: positions[0].coords.speed || 0,
-                    heading: positions[0].coords.heading || null
-                },
-                timestamp: positions[0].timestamp
-            };
-        }
-
-        // Update user location in Firebase
-        function updateLocationInFirebase(position) {
-            if (!currentUsername || !position) return;
-
-            const locationData = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                accuracy: position.coords.accuracy,
-                timestamp: Date.now(),
-                speed: position.coords.speed || 0,
-                heading: position.coords.heading || null
-            };
-
-            database.ref(`${LOCATION_REF}/${currentUsername}`).update(locationData)
-                .catch(error => {
-                    console.error('Error updating location:', error);
-                    showStatus(trackingStatus, 'Error updating location', 'error');
-                });
-        }
-
-        // Set up real-time listener for location updates
-        function setupLocationListener() {
-            database.ref(LOCATION_REF).on('value', snapshot => {
-                renderUserList(snapshot.val() || {});
-            }, error => {
-                console.error('Error getting locations:', error);
-                showStatus(trackingStatus, 'Error getting location data', 'error');
-            });
-        }
-
-        // Render the list of users and their locations
-        function renderUserList(usersData) {
-            const now = Date.now();
-            const activeUserIds = new Set();
-
-            // Get current user's position for distance calculation
-            const currentUserData = usersData[currentUsername];
-
-            Object.entries(usersData).forEach(([username, userData]) => {
-                        activeUserIds.add(username);
-
-                        const timeDiff = now - userData.timestamp;
-                        const isOffline = timeDiff > OFFLINE_THRESHOLD;
-
-                        // Calculate distance from current user
-                        let distance = null;
-                        if (currentUsername && currentUserData && username !== currentUsername) {
-                            distance = calculateDistance(
-                                currentUserData.latitude, currentUserData.longitude,
-                                userData.latitude, userData.longitude
-                            );
-                        }
-
-                        // Get accuracy class
-                        let accuracyClass = 'accuracy-low';
-                        if (userData.accuracy <= HIGH_ACCURACY_THRESHOLD) {
-                            accuracyClass = 'accuracy-high';
-                        } else if (userData.accuracy <= MEDIUM_ACCURACY_THRESHOLD) {
-                            accuracyClass = 'accuracy-medium';
-                        }
-
-                        // Get or create DOM node for this user
-                        let userNode = userNodes.get(username);
-
-                        if (!userNode) {
-                            userNode = document.createElement('div');
-                            userNode.className = 'user-card';
-                            userListElement.appendChild(userNode);
-                            userNodes.set(username, userNode);
-                        }
-
-                        // Update user card content
-                        userNode.className = `user-card ${username === currentUsername ? 'current-user' : ''} ${isOffline ? 'offline' : ''}`;
-                        userNode.innerHTML = `
-                    <div class="user-header">
-                        <span class="username">${username} ${username === currentUsername ? '(You)' : ''}</span>
-                        <span class="last-seen">${formatTimeDiff(timeDiff)}</span>
-                    </div>
-                    <div class="coords">
-                        <span class="accuracy ${accuracyClass}"></span>
-                        Lat: ${userData.latitude.toFixed(5)}, Lng: ${userData.longitude.toFixed(5)}
-                    </div>
-                    <div class="metadata">
-                        <span>Accuracy: ${userData.accuracy.toFixed(1)}m</span>
-                        ${userData.speed ? `<span>Speed: ${(userData.speed * 3.6).toFixed(1)} km/h</span>` : ''}
-                    </div>
-                    ${distance !== null ? `<div class="distance">Distance: ${distance.toFixed(2)} km</div>` : ''}
-                `;
-            });
-            
-            // Remove users that are no longer in the data
-            userNodes.forEach((node, username) => {
-                if (!activeUserIds.has(username)) {
-                    userListElement.removeChild(node);
-                    userNodes.delete(username);
-                }
-            });
-        }
-        
-        // Calculate the distance between two coordinates in kilometers (Haversine formula)
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Earth's radius in kilometers
-            const dLat = toRadians(lat2 - lat1);
-            const dLon = toRadians(lon2 - lon1);
-            
-            const a = 
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * 
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) ** 2;
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c;
         }
-        
-        // Convert degrees to radians
-        function toRadians(degrees) {
-            return degrees * Math.PI / 180;
-        }
-        
-        // Format time difference for display
-        function formatTimeDiff(timeDiff) {
-            if (timeDiff < 1000) return 'Just now';
-            
-            const seconds = Math.floor(timeDiff / 1000);
+
+        function timeSince(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
             if (seconds < 60) return `${seconds}s ago`;
-            
-            const minutes = Math.floor(seconds / 60);
-            if (minutes < 60) return `${minutes}m ago`;
-            
-            const hours = Math.floor(minutes / 60);
-            return `${hours}h ago`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            return `${Math.floor(seconds / 3600)}h ago`;
         }
-        
-        // Handle position errors
-        function handlePositionError(error) {
-            let message;
-            
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    message = 'Location access denied. Please allow location access.';
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    message = 'Location information unavailable.';
-                    break;
-                case error.TIMEOUT:
-                    message = 'Location request timed out.';
-                    break;
-                default:
-                    message = 'An unknown error occurred.';
-            }
-            
-            showStatus(trackingStatus, message, 'error');
-            console.error('Geolocation error:', error);
-        }
-        
-        // Display status messages
-        function showStatus(element, message, type) {
-            element.textContent = message;
-            element.className = `status ${type}`;
-            
-            // Auto-hide success messages after 5 seconds
-            if (type === 'success') {
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
-        // Set up cleanup when user leaves
-        function setupCleanup() {
-            const cleanup = () => {
-                if (currentUsername) {
-                    database.ref(`${LOCATION_REF}/${currentUsername}`).remove()
-                        .catch(error => console.error('Error removing location:', error));
-                }
-                
-                if (watchPositionId !== null) {
-                    navigator.geolocation.clearWatch(watchPositionId);
-                    watchPositionId = null;
-                }
-            };
-            
-            // Handle page unload events
-            window.addEventListener('beforeunload', cleanup);
-            window.addEventListener('pagehide', cleanup);
-            
-            // Also handle visibility change for mobile browsers
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden && currentUsername) {
-                    // Mark as offline when tab is hidden
-                    database.ref(`${LOCATION_REF}/${currentUsername}`).update({
-                        timestamp: Date.now() - OFFLINE_THRESHOLD
-                    }).catch(error => console.error('Error updating offline status:', error));
-                }
+
+        function updateLocation(position) {
+            currentPosition = position;
+            db.ref('locations/' + currentUsername).set({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                timestamp: Date.now()
             });
         }
+
+        function startTracking() {
+            if (!navigator.geolocation) return alert("Geolocation not supported.");
+            navigator.geolocation.watchPosition(
+                updateLocation,
+                (err) => alert("Error: " + err.message), {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 10000
+                }
+            );
+        }
+
+        function renderUsers(data) {
+            if (!data) return;
+            const seen = new Set();
+            Object.entries(data).forEach(([username, loc]) => {
+                        seen.add(username);
+                        const isSelf = username === currentUsername;
+                        const distance = currentPosition && !isSelf ?
+                            getDistance(currentPosition.coords.latitude, currentPosition.coords.longitude, loc.latitude, loc.longitude).toFixed(2) :
+                            "0.00";
+
+                        const content = `
+          <b>${username}</b><br/>
+          Lat: ${loc.latitude.toFixed(5)}, Lon: ${loc.longitude.toFixed(5)}<br/>
+          ${!isSelf ? `Distance: ${distance} km<br/>` : ""}
+          Last seen: ${timeSince(loc.timestamp)}
+        `;
+
+        let existing = document.getElementById(`user-${username}`);
+        if (existing) {
+          existing.innerHTML = content;
+        } else {
+          const div = document.createElement("div");
+          div.id = `user-${username}`;
+          div.innerHTML = content;
+          userList.appendChild(div);
+        }
+      });
+
+      // Remove stale users
+      Array.from(userList.children).forEach(child => {
+        const id = child.id.replace("user-", "");
+        if (!seen.has(id)) child.remove();
+      });
+    }
+
+    document.getElementById('startBtn').onclick = () => {
+      const username = usernameInput.value.trim();
+      if (!username) return alert("Enter a username");
+
+      currentUsername = username;
+      loginDiv.style.display = "none";
+      trackerDiv.style.display = "block";
+
+      startTracking();
+      db.ref("locations").on("value", (snap) => renderUsers(snap.val()));
+      window.addEventListener("beforeunload", () => {
+        db.ref("locations/" + currentUsername).remove();
+      });
+    };
     </script>
 </body>
 
