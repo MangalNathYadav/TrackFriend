@@ -2,51 +2,61 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrackFriend - Island Locator</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>TrackFriend – Island Locator</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Your styles -->
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <header>
-        <h1>TrackFriend - Island Locator</h1>
-    </header>
-    <main>
-        <div id="map-container">
-            <div id="map"></div>
+    <!-- username modal -->
+    <div id="username-modal" class="modal">
+        <div class="modal-content">
+            <h2>Enter your username</h2>
+            <input id="username-input" placeholder="Your name…" maxlength="20" />
+            <button id="username-submit">Join</button>
         </div>
-        <div id="sidebar">
-            <div id="user-info">
-                <p>User: <strong id="current-username">N/A</strong></p>
-                <p>Status: <span id="connection-status">Connecting...</span></p>
-                <p>Latitude: <span id="current-latitude">N/A</span></p>
-                <p>Longitude: <span id="current-longitude">N/A</span></p>
-                <p>Online Users: <span id="online-users-count">0</span></p>
+    </div>
+
+    <header>
+        <h1>TrackFriend – Island Locator</h1>
+    </header>
+
+    <main>
+        <section id="maps">
+            <!-- Left: high-zoom Leaflet map -->
+            <div id="street-map"></div>
+            <!-- Right: custom graph-paper canvas -->
+            <canvas id="grid-map"></canvas>
+        </section>
+
+        <aside id="sidebar">
+            <div class="info">
+                <p>User: <strong id="current-username">–</strong></p>
+                <p>Status: <span id="connection-status">Connecting…</span></p>
+                <p>Latitude: <span id="current-latitude">–</span></p>
+                <p>Longitude: <span id="current-longitude">–</span></p>
+                <p>Online: <span id="online-users-count">0</span></p>
             </div>
-            <div id="user-list-container">
-                <h3>Active Users:</h3>
+            <div class="users">
+                <h3>Active Users</h3>
                 <ul id="user-list"></ul>
             </div>
-            <div id="distance-tool-container">
-                <h4>Calculate Distance</h4>
-                <div id="selected-users-display">
-                    <p>User 1: <span id="selected-user1-name">None</span></p>
-                    <p>User 2: <span id="selected-user2-name">None</span></p>
-                </div>
-                <button id="calculate-distance-btn" disabled>Calculate</button>
-                <p id="distance-result"></p>
-            </div>
-            <div id="controls">
-                <button id="refresh-button">Refresh Location</button>
-            </div>
-        </div>
+            <button id="refresh-button">Refresh Location</button>
+        </aside>
     </main>
 
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Your code -->
     <script src="script.js"></script>
 </body>
 

@@ -1,4 +1,4 @@
-// Firebase Configuration (Replace with your config)
+// — Firebase Configuration (your existing) —
 const firebaseConfig = {
     apiKey: "AIzaSyAkkGmA4LVvaxDUoWtMs4vVwmZHBVMCgy0",
     authDomain: "trackfriend-e311f.firebaseapp.com",
@@ -8,178 +8,203 @@ const firebaseConfig = {
     messagingSenderId: "58012498625",
     appId: "1:58012498625:web:e92503aea54af303903240"
 };
-// Firebase Config (Replace with your values)
-
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const db = firebase.database();
 
-// App State
-let currentUser = null;
-let map = null;
-let userMarkers = {};
-let userPolylines = {};
-let allUsersData = {};
-const USER_INACTIVITY_THRESHOLD = 120000; // 2 minutes
-
-// DOM Elements
-const elements = {
-    currentUsername: document.getElementById('current-username'),
-    connectionStatus: document.getElementById('connection-status'),
-    onlineUsersCount: document.getElementById('online-users-count'),
-    userList: document.getElementById('user-list'),
-    currentLatitude: document.getElementById('current-latitude'),
-    currentLongitude: document.getElementById('current-longitude'),
-    refreshButton: document.getElementById('refresh-button'),
-    calculateDistanceBtn: document.getElementById('calculate-distance-btn'),
-    distanceResult: document.getElementById('distance-result'),
-    selectedUser1: document.getElementById('selected-user1-name'),
-    selectedUser2: document.getElementById('selected-user2-name')
+// — DOM refs —
+const ui = {
+    modal: document.getElementById("username-modal"),
+    input: document.getElementById("username-input"),
+    submit: document.getElementById("username-submit"),
+    userName: document.getElementById("current-username"),
+    status: document.getElementById("connection-status"),
+    lat: document.getElementById("current-latitude"),
+    lng: document.getElementById("current-longitude"),
+    online: document.getElementById("online-users-count"),
+    list: document.getElementById("user-list"),
+    refresh: document.getElementById("refresh-button"),
+    mapDiv: document.getElementById("street-map"),
+    grid: document.getElementById("grid-map")
 };
 
-// Core Functions
+let currentUser = null;
+let map = null;
+let gridCtx = null;
+let allData = {};
+
+// — formatting helpers —
+function formatNumber(x) {
+    return x.toString()
+        .split(".")
+        .map((p, i) => i === 0 ?
+            p.replace(/\B(?=(\d{3})+(?!\d))/g, ",") :
+            p
+        )
+        .join(".");
+}
+
+function convertDist(km) {
+    const m = km * 1e3;
+    const cm = km * 1e5;
+    return `${formatNumber(km.toFixed(2))} km | ${formatNumber(m.toFixed(0))} m | ${formatNumber(cm.toFixed(0))} cm`;
+}
+
+// — init Leaflet map at zoom 18 for street-level detail —
 function initMap(lat, lng) {
-    map = L.map('map').setView([lat, lng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-}
-
-function updateUserLocation(lat, lng) {
-    database.ref(`locations/${currentUser}`).set({
-        latitude: lat,
-        longitude: lng,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        username: currentUser
-    });
-}
-
-function handleGeolocation() {
-    if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser.");
-        initMap(-17.6797, -149.4068); // Default to Tahiti
-        return;
-    }
-
-    const geoOptions = {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-    };
-
-    const success = position => {
-        const { latitude, longitude } = position.coords;
-        elements.currentLatitude.textContent = latitude.toFixed(5);
-        elements.currentLongitude.textContent = longitude.toFixed(5);
-
-        if (!map) initMap(latitude, longitude);
-        updateUserLocation(latitude, longitude);
-        updateUserMarker(currentUser, latitude, longitude, true);
-    };
-
-    const error = err => {
-        console.error('Geolocation error:', err);
-        elements.connectionStatus.textContent = `Error: ${err.message}`;
-        if (!map) initMap(-17.6797, -149.4068);
-    };
-
-    navigator.geolocation.watchPosition(success, error, geoOptions);
-    navigator.geolocation.getCurrentPosition(success, error, geoOptions);
-}
-
-function updateUserMarker(username, lat, lng, isSelf) {
-    const iconColor = isSelf ? 'blue' : 'green';
-    const markerHtml = `
-        <div style="
-            width: 16px;
-            height: 16px;
-            background: ${iconColor};
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 0 8px rgba(0,0,0,0.3);
-        "></div>
-    `;
-
-    if (userMarkers[username]) {
-        userMarkers[username].setLatLng([lat, lng]);
-    } else {
-        userMarkers[username] = L.marker([lat, lng], {
-            icon: L.divIcon({
-                className: 'user-marker',
-                html: markerHtml,
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
-            })
+    if (!map) {
+        map = L.map(ui.mapDiv).setView([lat, lng], 18);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
+    } else {
+        map.setView([lat, lng], 18);
     }
 }
 
-// Initialize App
-function initApp() {
-    // Set username
-    currentUser = localStorage.getItem('trackFriendUser') ||
-        `User${Math.floor(Math.random() * 1000)}`;
-    localStorage.setItem('trackFriendUser', currentUser);
-    elements.currentUsername.textContent = currentUser;
-
-    // Setup Firebase listeners
-    database.ref('locations').on('value', snapshot => {
-        const locations = snapshot.val() || {};
-        allUsersData = locations;
-
-        // Update user list
-        elements.userList.innerHTML = '';
-        Object.entries(locations).forEach(([username, data]) => {
-            if (username === currentUser) return;
-
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div class="user-item">
-                    <span class="username">${username}</span>
-                    <span class="distance">${getDistance(
-                        data.latitude, 
-                        data.longitude, 
-                        locations[currentUser]?.latitude || 0, 
-                        locations[currentUser]?.longitude || 0
-                    ).toFixed(1)} km</span>
-                    <div class="timestamp">${timeAgo(data.timestamp)}</div>
-                </div>
-            `;
-            elements.userList.appendChild(li);
-        });
-
-        elements.onlineUsersCount.textContent = Object.keys(locations).length;
-    });
-
-    // Setup event listeners
-    elements.refreshButton.addEventListener('click', () => {
-        navigator.geolocation.getCurrentPosition(position => {
-            const { latitude, longitude } = position.coords;
-            updateUserLocation(latitude, longitude);
-            map.setView([latitude, longitude]);
-        });
-    });
-
-    // Start geolocation
-    handleGeolocation();
+// — init grid canvas —
+function initGrid() {
+    const c = ui.grid;
+    c.width = c.clientWidth;
+    c.height = c.clientHeight;
+    gridCtx = c.getContext("2d");
+    drawGrid();
 }
 
-// Helper Functions
+function drawGrid() {
+    const ctx = gridCtx;
+    const w = ctx.canvas.width,
+        h = ctx.canvas.height,
+        step = 25;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = "#ccc";
+    for (let x = 0; x <= w; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= h; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+    }
+}
+
+function plotPoints() {
+    drawGrid();
+    if (!allData[currentUser]) return;
+    const self = allData[currentUser];
+    const origin = { x: gridCtx.canvas.width / 2, y: gridCtx.canvas.height / 2 };
+
+    // self marker
+    gridCtx.fillStyle = "blue";
+    gridCtx.fillRect(origin.x - 5, origin.y - 5, 10, 10);
+
+    Object.entries(allData).forEach(([user, d]) => {
+        if (user === currentUser) return;
+        const dx = (d.longitude - self.longitude) * 111000 * Math.cos(self.latitude * Math.PI / 180);
+        const dy = (d.latitude - self.latitude) * 111000;
+        const px = origin.x + dx / 500;
+        const py = origin.y - dy / 500;
+
+        gridCtx.fillStyle = "green";
+        gridCtx.fillRect(px - 5, py - 5, 10, 10);
+
+        gridCtx.beginPath();
+        gridCtx.moveTo(origin.x, origin.y);
+        gridCtx.lineTo(px, py);
+        gridCtx.strokeStyle = "red";
+        gridCtx.stroke();
+    });
+}
+
+// — haversine (km) —
 function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    const a = Math.sin(dLat / 2) ** 2 +
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        Math.sin(dLon / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function timeAgo(timestamp) {
-    const seconds = Math.floor((Date.now() - timestamp) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    if (seconds < 3600) return `${Math.floor(seconds/60)}m ago`;
-    return `${Math.floor(seconds/3600)}h ago`;
+// — geolocation & Firebase write —
+function handleGeo() {
+    if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
+    }
+    navigator.geolocation.watchPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+        ui.lat.textContent = latitude.toFixed(5);
+        ui.lng.textContent = longitude.toFixed(5);
+
+        initMap(latitude, longitude);
+        if (!gridCtx) initGrid();
+
+        db.ref(`locations/${currentUser}`).set({
+            latitude,
+            longitude,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+    }, err => {
+        ui.status.textContent = "Error: " + err.message;
+    }, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000
+    });
 }
 
-// Start Application
-document.addEventListener('DOMContentLoaded', initApp);
+// — live sidebar list —
+db.ref("locations").on("value", snap => {
+    const locs = snap.val() || {};
+    allData = locs;
+    if (locs[currentUser]) {
+        ui.status.textContent = "Online";
+        ui.online.textContent = Object.keys(locs).length;
+        ui.list.innerHTML = "";
+
+        Object.entries(locs).forEach(([user, d]) => {
+            if (user === currentUser) return;
+            const km = getDistance(
+                d.latitude, d.longitude,
+                locs[currentUser].latitude, locs[currentUser].longitude
+            );
+            const li = document.createElement("li");
+            li.innerHTML = `<span>${user}</span><span>${convertDist(km)}</span>`;
+            ui.list.appendChild(li);
+        });
+
+        plotPoints();
+    }
+});
+
+// — username modal logic —
+ui.submit.onclick = () => {
+    const name = ui.input.value.trim();
+    if (!name) return alert("Please enter a name");
+    currentUser = name;
+    localStorage.setItem("trackFriendUser", name);
+    ui.userName.textContent = name;
+    ui.modal.style.display = "none";
+    handleGeo();
+};
+
+window.onload = () => {
+    const saved = localStorage.getItem("trackFriendUser");
+    if (saved) {
+        currentUser = saved;
+        ui.userName.textContent = saved;
+        ui.modal.style.display = "none";
+        handleGeo();
+    } else {
+        ui.modal.style.display = "flex";
+    }
+    ui.refresh.onclick = () => {
+        navigator.geolocation.getCurrentPosition(() => {});
+    };
+    window.addEventListener("resize", initGrid);
+};
