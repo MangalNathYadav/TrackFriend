@@ -2,105 +2,77 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Location Tracker</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
-        * {
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: "Segoe UI", sans-serif;
             margin: 0;
-            padding: 1rem;
-            background: linear-gradient(to right, #e0f7fa, #ffffff);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center;
-        }
-        
-        h1 {
-            text-align: center;
-            margin-bottom: 1rem;
-            font-size: 2rem;
+            height: 100vh;
         }
         
         #loginDiv,
         #trackerDiv {
-            width: 100%;
-            max-width: 500px;
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
         }
         
-        input {
+        #map {
+            flex: 1;
+            height: 100%;
             width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1rem;
         }
         
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            font-size: 1rem;
-            background-color: #00796b;
-            color: white;
-            border: none;
-            border-radius: 6px;
+        #loginDiv {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        
+        #usernameInput {
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        #startBtn {
+            padding: 10px 20px;
+            font-size: 16px;
             cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        button:hover {
-            background-color: #004d40;
-        }
-        
-        #userList {
-            margin-top: 1rem;
-        }
-        
-        #userList div {
-            background: #fafafa;
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            font-size: 0.95rem;
         }
         
         @media (max-width: 600px) {
-            h1 {
-                font-size: 1.5rem;
-            }
-            input,
-            button {
-                font-size: 0.95rem;
+            #usernameInput,
+            #startBtn {
+                width: 90%;
             }
         }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
 
-    <h1>Live Location Tracker</h1>
-
     <div id="loginDiv">
-        <input type="text" id="usernameInput" placeholder="Enter your name" />
+        <input id="usernameInput" placeholder="Enter your name" />
         <button id="startBtn">Start Tracking</button>
     </div>
 
     <div id="trackerDiv" style="display: none;">
-        <h2 style="margin-top: 0;">Live Users</h2>
-        <div id="userList"></div>
+        <div id="map"></div>
     </div>
 
     <script>
@@ -117,35 +89,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const usernameInput = document.getElementById('usernameInput');
-        const loginDiv = document.getElementById('loginDiv');
-        const trackerDiv = document.getElementById('trackerDiv');
-        const userList = document.getElementById('userList');
+        const loginDiv = document.getElementById("loginDiv");
+        const trackerDiv = document.getElementById("trackerDiv");
+        const usernameInput = document.getElementById("usernameInput");
+        const startBtn = document.getElementById("startBtn");
 
         let currentUsername = null;
-        let currentPosition = null;
-
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) ** 2 +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) ** 2;
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
-
-        function timeSince(timestamp) {
-            const seconds = Math.floor((Date.now() - timestamp) / 1000);
-            if (seconds < 60) return `${seconds}s ago`;
-            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-            return `${Math.floor(seconds / 3600)}h ago`;
-        }
+        let currentMarker = null;
+        let userMarkers = {};
+        let map = null;
 
         function updateLocation(position) {
-            currentPosition = position;
-            db.ref('locations/' + currentUsername).set({
+            db.ref("locations/" + currentUsername).set({
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
                 timestamp: Date.now()
@@ -153,66 +108,80 @@
         }
 
         function startTracking() {
-            if (!navigator.geolocation) return alert("Geolocation not supported.");
-            navigator.geolocation.watchPosition(
-                updateLocation,
-                (err) => alert("Error: " + err.message), {
-                    enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 10000
+            navigator.geolocation.watchPosition(position => {
+                updateLocation(position);
+
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                if (!currentMarker) {
+                    map.setView([lat, lng], 15);
+                    currentMarker = L.marker([lat, lng]).addTo(map)
+                        .bindPopup("You").openPopup();
+                } else {
+                    currentMarker.setLatLng([lat, lng]);
                 }
-            );
+
+            }, err => {
+                alert("Geolocation error: " + err.message);
+            }, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            });
         }
 
-        function renderUsers(data) {
-            if (!data) return;
-            const seen = new Set();
-            Object.entries(data).forEach(([username, loc]) => {
-                        seen.add(username);
-                        const isSelf = username === currentUsername;
-                        const distance = currentPosition && !isSelf ?
-                            getDistance(currentPosition.coords.latitude, currentPosition.coords.longitude, loc.latitude, loc.longitude).toFixed(2) :
-                            "0.00";
+        function renderMap() {
+            map = L.map('map').setView([20.5937, 78.9629], 5); // Default India
 
-                        const content = `
-          <b>${username}</b><br/>
-          Lat: ${loc.latitude.toFixed(5)}, Lon: ${loc.longitude.toFixed(5)}<br/>
-          ${!isSelf ? `Distance: ${distance} km<br/>` : ""}
-          Last seen: ${timeSince(loc.timestamp)}
-        `;
-
-        let existing = document.getElementById(`user-${username}`);
-        if (existing) {
-          existing.innerHTML = content;
-        } else {
-          const div = document.createElement("div");
-          div.id = `user-${username}`;
-          div.innerHTML = content;
-          userList.appendChild(div);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
         }
-      });
 
-      // Remove stale users
-      Array.from(userList.children).forEach(child => {
-        const id = child.id.replace("user-", "");
-        if (!seen.has(id)) child.remove();
-      });
-    }
+        function listenToFirebase() {
+            db.ref("locations").on("value", snapshot => {
+                const data = snapshot.val();
+                Object.keys(userMarkers).forEach(user => {
+                    if (!data || !data[user]) {
+                        map.removeLayer(userMarkers[user]);
+                        delete userMarkers[user];
+                    }
+                });
 
-    document.getElementById('startBtn').onclick = () => {
-      const username = usernameInput.value.trim();
-      if (!username) return alert("Enter a username");
+                for (const user in data) {
+                    const {
+                        latitude,
+                        longitude
+                    } = data[user];
+                    if (user === currentUsername) continue;
 
-      currentUsername = username;
-      loginDiv.style.display = "none";
-      trackerDiv.style.display = "block";
+                    if (!userMarkers[user]) {
+                        userMarkers[user] = L.marker([latitude, longitude]).addTo(map).bindPopup(user);
+                    } else {
+                        userMarkers[user].setLatLng([latitude, longitude]);
+                    }
+                }
+            });
+        }
 
-      startTracking();
-      db.ref("locations").on("value", (snap) => renderUsers(snap.val()));
-      window.addEventListener("beforeunload", () => {
-        db.ref("locations/" + currentUsername).remove();
-      });
-    };
+        startBtn.onclick = () => {
+            const username = usernameInput.value.trim();
+            if (!username) return alert("Enter your name!");
+
+            currentUsername = username;
+            loginDiv.style.display = "none";
+            trackerDiv.style.display = "block";
+
+            renderMap();
+            startTracking();
+            listenToFirebase();
+
+            // Auto remove on tab close
+            window.addEventListener("beforeunload", () => {
+                db.ref("locations/" + currentUsername).remove();
+            });
+        };
     </script>
 </body>
 
