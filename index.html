@@ -9,6 +9,9 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
+    <!-- Material Icons for custom markers -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <!-- Your styles -->
     <link rel="stylesheet" href="styles.css" />
 </head>
@@ -29,10 +32,15 @@
 
     <main>
         <section id="maps">
+            <!-- Tab controls -->
+            <div class="map-tabs">
+                <button id="street-map-tab" class="active-tab">Street View</button>
+                <button id="grid-map-tab">Graph View</button>
+            </div>
             <!-- Left: high-zoom Leaflet map -->
             <div id="street-map"></div>
             <!-- Right: custom graph-paper canvas -->
-            <canvas id="grid-map"></canvas>
+            <canvas id="grid-map" style="display: none;"></canvas>
         </section>
 
         <aside id="sidebar">

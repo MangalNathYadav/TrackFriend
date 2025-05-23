@@ -37,8 +37,27 @@ main {
 
 #maps {
     flex: 3;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
+}
+
+.map-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+}
+
+.map-tabs button {
+    padding: 10px 15px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 1em;
+    border-bottom: 3px solid transparent;
+}
+
+.map-tabs button.active-tab {
+    border-bottom: 3px solid var(--primary);
+    font-weight: bold;
 }
 
 #street-map,
@@ -78,6 +97,21 @@ main {
     justify-content: space-between;
 }
 
+#user-list li button.show-on-map-button {
+    margin-left: 10px;
+    padding: 5px 8px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+#user-list li button.show-on-map-button:hover {
+    background-color: #2980b9;
+    /* Darker shade of primary */
+}
+
 #refresh-button {
     margin-top: 12px;
     background: var(--secondary);
@@ -93,7 +127,7 @@ main {
         flex-direction: column
     }
     #maps {
-        height: 60vh
+        height: 60vh;
     }
     #sidebar {
         height: 40vh
@@ -134,4 +168,40 @@ main {
     color: #fff;
     border: none;
     cursor: pointer;
+}
+
+
+/* Custom Leaflet Marker Styles */
+
+.custom-div-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-pin {
+    width: 30px;
+    height: 30px;
+    border-radius: 50% 50% 50% 0;
+    background: var(--primary);
+    /* Default color, will be overridden by inline style */
+    position: absolute;
+    transform: rotate(-45deg);
+    left: 50%;
+    top: 50%;
+    margin-left: -15px;
+    margin-top: -15px;
+    border: 1px solid #fff;
+    /* Optional: adds a white border */
+}
+
+.custom-div-icon .material-icons {
+    position: relative;
+    /* To bring icon above the pin shape */
+    font-size: 20px;
+    /* Adjust icon size as needed */
+    color: white;
+    /* Icon color */
+    z-index: 1;
 }
