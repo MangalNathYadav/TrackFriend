@@ -31,6 +31,7 @@ let currentUser = null;
 let map = null;
 let gridCtx = null;
 let allData = {};
+let userMarkers = {};
 
 // — formatting helpers —
 function formatNumber(x) {
@@ -158,27 +159,78 @@ function handleGeo() {
     });
 }
 
-// — live sidebar list —
+// — live sidebar list & map markers —
 db.ref("locations").on("value", snap => {
     const locs = snap.val() || {};
-    allData = locs;
-    if (locs[currentUser]) {
+    allData = locs; // Used by grid plot and distance calculations
+
+    // Update online status and user list in sidebar
+    if (locs[currentUser] && typeof locs[currentUser].latitude === 'number' && typeof locs[currentUser].longitude === 'number') {
         ui.status.textContent = "Online";
-        ui.online.textContent = Object.keys(locs).length;
-        ui.list.innerHTML = "";
+        ui.list.innerHTML = ""; // Clear previous list
 
         Object.entries(locs).forEach(([user, d]) => {
-            if (user === currentUser) return;
-            const km = getDistance(
-                d.latitude, d.longitude,
-                locs[currentUser].latitude, locs[currentUser].longitude
-            );
-            const li = document.createElement("li");
-            li.innerHTML = `<span>${user}</span><span>${convertDist(km)}</span>`;
-            ui.list.appendChild(li);
+            if (user === currentUser) return; // Don't list self
+            if (d && typeof d.latitude === 'number' && typeof d.longitude === 'number') { // Ensure other user's data is valid
+                const km = getDistance(
+                    d.latitude, d.longitude,
+                    locs[currentUser].latitude, locs[currentUser].longitude
+                );
+                const li = document.createElement("li");
+                li.innerHTML = `<span>${user}</span><span>${convertDist(km)}</span>`;
+                ui.list.appendChild(li);
+            }
+        });
+    } else {
+        ui.list.innerHTML = ""; // Clear list if current user data is not available
+        if (currentUser) { // Only show "Connecting..." if a user is set
+            ui.status.textContent = "Connecting...";
+        }
+    }
+    ui.online.textContent = Object.keys(locs).length;
+
+
+    // Update map markers if map is initialized
+    if (map) {
+        const currentUsersInFirebase = new Set();
+
+        Object.entries(locs).forEach(([user, d]) => {
+            // Ensure location data is valid before creating/updating marker
+            if (d && typeof d.latitude === 'number' && typeof d.longitude === 'number') {
+                currentUsersInFirebase.add(user);
+                const latLng = [d.latitude, d.longitude];
+
+                if (userMarkers[user]) {
+                    // Marker exists, update position
+                    userMarkers[user].setLatLng(latLng);
+                } else {
+                    // New user, create marker
+                    userMarkers[user] = L.marker(latLng).addTo(map);
+                    userMarkers[user].bindPopup(user);
+                }
+                // Optional: Customize current user's marker, e.g., different color or open popup by default
+                if (user === currentUser && userMarkers[user]) {
+                    // userMarkers[user].openPopup(); // Example: open current user's popup
+                    // Or use a custom icon: userMarkers[user].setIcon(L.icon({ /* ... */ }));
+                }
+            }
         });
 
+        // Remove markers for users who are no longer in locs (went offline or data removed)
+        Object.keys(userMarkers).forEach(userInMarkerCache => {
+            if (!currentUsersInFirebase.has(userInMarkerCache)) {
+                map.removeLayer(userMarkers[userInMarkerCache]);
+                delete userMarkers[userInMarkerCache];
+            }
+        });
+    }
+
+    // Update grid plot
+    if (gridCtx && locs[currentUser] && typeof locs[currentUser].latitude === 'number' && typeof locs[currentUser].longitude === 'number') {
         plotPoints();
+    } else if (gridCtx) {
+        // If currentUser data is not available, just draw an empty grid or a specific state
+        drawGrid(); // Clears and redraws the basic grid
     }
 });
 
