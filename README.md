@@ -22,7 +22,7 @@ To run the project locally, follow these steps:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/TrackFriend.git
+   git clone https://github.com/MangalNathYadav/TrackFriend.git
    ```
 
 2. Navigate to the project directory:
@@ -49,4 +49,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Contact
 
-For any questions or feedback, please contact [your-email@example.com].
+For any questions or feedback, please contact [mangalyadav15nov@gmail.com].
