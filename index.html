@@ -1,71 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>TrackFriend – Island Locator</title>
-
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <!-- Material Icons for custom markers -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-    <!-- Your styles -->
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrackFriend – Island Locator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="group.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
-
-<body>
-    <!-- username modal -->
-    <div id="username-modal" class="modal">
-        <div class="modal-content">
-            <h2>Enter your username</h2>
-            <input id="username-input" placeholder="Your name…" maxlength="20" />
-            <button id="username-submit">Join</button>
+<body >
+  <header id="main-header" style="width:100vw;position:fixed;top:0;left:0;z-index:2001;background:#fff;box-shadow:0 2px 16px #0001;display:flex;align-items:center;gap:16px;padding:0 32px;height:64px;">
+    <span style="font-size:2em;filter:drop-shadow(0 2px 8px #4f8cff33);margin-right:8px;">🌍</span>
+    <span style="font-size:1.5em;font-weight:700;color:#4f8cff;letter-spacing:1px;">TrackFriend</span>
+    <span style="font-size:1em;color:#2d3a4a;margin-left:8px;opacity:0.7;">Island Locator</span>
+  </header>
+  <div style="height:64px;"></div>
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:18px;">
+        <div style="font-size:3.5em; margin-bottom:0.2em; color:#4f8cff;">
+          <span style="filter: drop-shadow(0 2px 8px #4f8cff33);">🌍</span>
         </div>
+        <h2 style="margin-bottom:0;">Welcome to TrackFriend</h2>
+        <div style="font-size:1.1em; color:#4f8cff; margin-bottom:10px;">Island Locator</div>
+      </div>
+      <button id="google-signin"><span style="font-size:1.2em; vertical-align:middle; margin-right:8px;">🔒</span>Continue with Google</button>
+      <button id="email-signin"><span style="font-size:1.2em; vertical-align:middle; margin-right:8px;">✉️</span>Sign in / Sign up with Email</button>
+      <form id="email-form" style="display:none;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.2em;">👤</span>
+          <input type="text" id="username" placeholder="Username (for Sign Up)" autocomplete="username" />
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.2em;">📧</span>
+          <input type="email" id="email" placeholder="Email" required />
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.2em;">🔑</span>
+          <input type="password" id="password" placeholder="Password" required />
+        </div>
+        <button type="submit"><span style="font-size:1.2em; vertical-align:middle; margin-right:8px;">➡️</span>Submit</button>
+      </form>
     </div>
-
-    <header>
-        <h1>TrackFriend – Island Locator</h1>
-    </header>
-
-    <main>
-        <section id="maps">
-            <!-- Tab controls -->
-            <div class="map-tabs">
-                <button id="street-map-tab" class="active-tab">Street View</button>
-                <button id="grid-map-tab">Graph View</button>
-            </div>
-            <!-- Left: high-zoom Leaflet map -->
-            <div id="street-map"></div>
-            <!-- Right: custom graph-paper canvas -->
-            <canvas id="grid-map" style="display: none;"></canvas>
-        </section>
-
-        <aside id="sidebar">
-            <div class="info">
-                <p>User: <strong id="current-username">–</strong></p>
-                <p>Status: <span id="connection-status">Connecting…</span></p>
-                <p>Latitude: <span id="current-latitude">–</span></p>
-                <p>Longitude: <span id="current-longitude">–</span></p>
-                <p>Online: <span id="online-users-count">0</span></p>
-            </div>
-            <div class="users">
-                <h3>Active Users</h3>
-                <ul id="user-list"></ul>
-            </div>
-            <button id="refresh-button">Refresh Location</button>
-        </aside>
-    </main>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- Your code -->
-    <script src="script.js"></script>
+  </div>
+  <div id="dashboard" style="display:none;">
+    <div class="container">
+      <div class="left-column">
+        <div id="profile-panel" class="panel"></div>
+        <div id="location-panel" class="panel">
+          <div id="latlng"></div>
+        </div>
+      </div>
+      <div class="right-column">
+        <div id="group-panel" class="panel"></div>
+      </div>
+    </div>
+  </div>
+  <div id="group-detail" style="display:none;"></div>
+  <script>
+    // Patch: Add username to sign up, show username in group, add Close Group button
+    // This script is only for UI patching, main logic is in script.js
+    // No-op, see script.js for logic
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
 </body>
-
 </html>

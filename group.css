@@ -1,0 +1,195 @@
+/* Full Map Modal Styles */
+#full-map-modal.modal {
+  display: none;
+  position: fixed;
+  z-index: 3000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.65);
+  align-items: center;
+  justify-content: center;
+}
+#full-map-modal .modal-content {
+  position: relative;
+  width: 95vw;
+  max-width: 900px;
+  height: 80vh;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 32px #0003;
+  display: flex;
+  flex-direction: column;
+}
+#full-group-map {
+    margin-top: 80px;
+  flex: 1 1 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+}
+#close-full-map {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: #f87171;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 1.1em;
+  z-index: 9999;
+  cursor: pointer;
+  min-width: 44px;
+  box-shadow: 0 2px 8px #f8717122;
+  transition: background 0.18s;
+}
+#close-full-map:hover {
+  background: #dc2626;
+}
+@media (max-width: 700px) {
+  #full-map-modal .modal-content {
+    width: 99vw;
+    max-width: 99vw;
+    height: 85vh;
+    border-radius: 7px;
+  }
+  #close-full-map {
+    font-size: 1em;
+    padding: 6px 8px;
+    top: 7px;
+    right: 7px;
+    min-width: 36px;
+  }
+}
+/* group.css - Styles for Group Detail Division (Mobile Friendly)
+---------------------------------------------------------------*/
+
+/* Main group detail container */
+#group-detail, .group-detail {
+display: flex;
+  flex-direction: row;
+  background: #f8fafc;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px #0001;
+  margin: 24px auto;
+  max-width: 95vw;
+  min-height: 420px;
+
+  margin-top:80px;
+  margin-left:2vw;
+  /* width: 80%; */
+  transition: box-shadow 0.2s;
+}
+/* Child columns */
+#group-detail > div, .group-detail-left, .group-detail-right {
+  flex: 1 1 0;
+  padding: 24px 18px;
+  background: #fff;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+/* Left column border */
+#group-detail > div:first-child, .group-detail-left {
+  border-right: 1.5px solid #e5e7eb;
+}
+#group-detail h2, .group-detail-right h2 {
+  font-size: 1.5em;
+  margin: 0 0 10px 0;
+  color: #2563eb;
+  letter-spacing: 0.5px;
+}
+#group-map {
+  width: 100%;
+  height: 260px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px #0001;
+}
+#group-graph {
+  width: 100% !important;
+  max-width: 100%;
+  height: 220px !important;
+  background: #f3f4f6;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0001;
+}
+#member-list ul {
+  padding: 0;
+  margin: 0 0 10px 0;
+  list-style: none;
+}
+#member-list li {
+  padding: 7px 0;
+  border-bottom: 1px solid #f1f1f1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.05em;
+}
+#member-list button {
+  background: #f87171;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.95em;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.18s;
+}
+#member-list button:hover {
+  background: #dc2626;
+}
+#group-detail button, .group-detail-right button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 1em;
+  margin: 6px 6px 0 0;
+  cursor: pointer;
+  
+  font-weight: 600;
+  box-shadow: 0 2px 8px #2563eb22;
+  transition: background 0.18s;
+}
+#group-detail button:hover, .group-detail-right button:hover {
+  background: #1d4ed8;
+}
+@media (max-width: 700px) {
+  #group-detail, .group-detail {
+    flex-direction: column;
+    max-width: 98vw;
+
+    margin: 10px 1vw;
+    
+    margin-top:85px;
+    min-height: unset;
+  }
+  #group-detail > div, .group-detail-left, .group-detail-right {
+    padding: 16px 6vw;
+    border-right: none !important;
+    border-bottom: 1.5px solid #e5e7eb;
+  }
+  #group-detail > div:last-child, .group-detail-right:last-child {
+    border-bottom: none;
+  }
+  #group-map, #group-graph {
+    height: 180px !important;
+  }
+  #group-detail h2, .group-detail-right h2 {
+    font-size: 1.15em;
+  }
+}
+
+/* Custom label for map pins */
+.user-label {
+  pointer-events: none;
+  z-index: 1001;
+}

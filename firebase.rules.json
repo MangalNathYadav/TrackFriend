@@ -1,0 +1,32 @@
+{
+  "rules": {
+    ".read":  "auth != null",
+    ".write": "auth != null",
+    "users": {
+      "$uid": {
+        ".read":  "auth.uid === $uid",
+        ".write": "auth.uid === $uid"
+      }
+    },
+    "locations": {
+      "$uid": {
+        ".read":  "auth != null",
+        ".write": "auth.uid === $uid",
+        ".validate": "newData.hasChildren(['lat','lng','timestamp'])"
+      }
+    },
+    "groups": {
+      "$group": {
+        ".read": "data.child('members').child(auth.uid).exists()",
+        ".write": "(!data.exists() && newData.child('ownerUid').val() === auth.uid) || (data.child('ownerUid').val() === auth.uid)",
+        ".validate": "newData.hasChildren(['ownerUid','privateKeyHash','createdAt','members'])",
+        "members": {
+          "$memberUid": {
+            ".read":  "root.child('groups').child($group).child('members').child(auth.uid).exists()",
+            ".write": "(auth.uid === $memberUid) || (data.parent().child('ownerUid').val() === auth.uid)"
+          }
+        }
+      }
+    }
+  }
+}

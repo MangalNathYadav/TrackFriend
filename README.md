@@ -1,58 +1,57 @@
-# TrackFriend
-<div align="center">
-  <a href="https://shipwrecked.hackclub.com/?t=ghrm" target="_blank">
-    <img src="https://hc-cdn.hel1.your-objectstorage.com/s/v3/739361f1d440b17fc9e2f74e49fc185d86cbec14_badge.png" 
-         alt="This project is part of Shipwrecked, the world's first hackathon on an island!" 
-         style="width: 35%;">
-  </a>
-</div>
-TrackFriend is a simple web application designed to help you keep track of your friends and their contact information. This project is built using HTML, CSS, and JavaScript.
+# TrackFriend – Island Locator
+
+## Setup Instructions
+
+## Overview
+
+TrackFriend is a web application that helps users track and manage groups of friends, view their locations on a map, and visualize group data. The app is mobile-friendly and features a modern, responsive UI.
 
 ## Features
+- Group detail view with map and graph visualizations
+- Member list management (add/remove members)
+- Full-screen map modal for detailed location viewing
+- Responsive design for both desktop and mobile devices
+- Styled with custom CSS for a clean, modern look
 
-- Add, edit, and delete friend information.
-- Search for friends by name.
-- Responsive design for mobile and desktop.
+## File Structure
+- `index.html` - Main HTML file for the app
+- `script.js` - JavaScript logic for interactivity and data handling
+- `group.css` - Main stylesheet for group and modal UI
+- `firebase.rules.json` - Firebase security rules (if using Firebase backend)
+- `README.md` - This documentation file
 
-## Project Structure
-
-The project consists of the following files:
-
-- `index.html`: The main HTML file that structures the web application.
-- `styles.css`: The CSS file for styling the application.
-- `script.js`: The JavaScript file that handles the application's functionality.
-
-## Getting Started
-
-To run the project locally, follow these steps:
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/MangalNathYadav/TrackFriend.git
-   ```
-
-2. Navigate to the project directory:
-   ```bash
-   cd TrackFriend
-   ```
-
-3. Open the `index.html` file in your web browser.
-
-## Usage
-
-1. Open the application in your browser.
-2. Use the input fields to add new friends.
-3. Edit or delete existing friend information as needed.
-4. Use the search bar to quickly find a friend.
-
-## Contributing
-
-Contributions are welcome! If you'd like to contribute, please fork the repository and submit a pull request.
+## Customization
+- Update the CSS in `group.css` to change the look and feel.
+- Modify `script.js` to connect to your backend or add new features.
 
 ## License
+This project is for educational and demonstration purposes. Please check with the repository owner for licensing details.
+1. **Firebase Project**
+   - Go to [Firebase Console](https://console.firebase.google.com/), create a new project.
+   - Enable **Authentication** (Google + Email/Password).
+   - Create a **Realtime Database** (in test mode, then apply `firebase.rules.json`).
+   - Add a web app, copy your config to `script.js`.
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+2. **Local Development**
+   - Place your Firebase config in `script.js`.
+   - Run a local server (e.g., `npx serve` or VS Code Live Server).
 
-## Contact
+3. **Deployment**
+   - Deploy to Firebase Hosting, Netlify, or any static host.
+   - Ensure HTTPS for geolocation and auth.
 
-For any questions or feedback, please contact [mangalyadav15nov@gmail.com].
+4. **Security Rules**
+   - Copy `firebase.rules.json` to the Firebase Console > Database > Rules.
+
+5. **Demo Video**
+   - Show login, group creation/join, real-time map, owner actions.
+
+---
+
+## Firebase Database Structure
+
+```
+/users/{uid} → { displayName, email, photoURL, lastSeen }
+/locations/{uid} → { lat, lng, timestamp }
+/groups/{groupName} → { ownerUid, privateKeyHash, createdAt, members: { [uid]: true } }
+```
